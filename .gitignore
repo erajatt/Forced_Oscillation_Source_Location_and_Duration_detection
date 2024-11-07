@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+/FO_Detector/node_modules
+dist
+dist-ssr
+
+# Environment files
+*.local
+
+# Python cache
+**/__pycache__/
+
+# Virtual environment
+/server/.venv/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Others (remove if unnecessary for your project)
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
