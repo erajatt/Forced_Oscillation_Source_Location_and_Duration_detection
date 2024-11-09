@@ -75,9 +75,12 @@ const Plot = () => {
   const [selectedProperties, setSelectedProperties] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [isDetecting, setIsDetecting] = useState(false);
   const [error, setError] = useState(null);
   const [sourceResult, setSourceResult] = useState(null);
   const [showChart, setShowChart] = useState(true);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
   const location = useLocation();
   const fileId = location.state?.fileId;
 
@@ -157,6 +160,38 @@ const Plot = () => {
     }
   };
 
+  const handleDetectStartTime = async () => {
+    if (!fileId) {
+      setError("No file selected. Please upload a file first.");
+      return;
+    }
+    setIsDetecting(true);
+    setError(null);
+    setStartTime(null);
+    setEndTime(null);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/detect_start_time/${fileId}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to detect start time");
+      }
+      const result = await response.json();
+      setStartTime(result.start_time);
+      setEndTime(result.end_time);
+    } catch (error) {
+      console.error("Error detecting start time:", error);
+      setError(error.message);
+    } finally {
+      setIsDetecting(false);
+    }
+  };
+
   const handleLocateSource = async () => {
     if (!fileId) {
       setError("No file selected. Please upload a file first.");
@@ -217,7 +252,7 @@ const Plot = () => {
   };
 
   const renderContent = () => {
-    if (isAnalyzing || isLocating) {
+    if (isAnalyzing || isLocating || isDetecting) {
       return (
         <div className="flex items-center justify-center h-full">
           <motion.div

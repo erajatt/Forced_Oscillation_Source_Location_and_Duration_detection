@@ -13,6 +13,12 @@ import pickle
 from database import SessionLocal, engine, Base
 from models import FileUpload
 import crud
+from utils import (
+    detect_anomalies_with_optimized_isolation_forest,
+    detect_oscillation_start_cwt,
+    plot_signal,
+    plot_cwt_power_with_anomalies
+)
 
 app = FastAPI()
 
@@ -154,23 +160,59 @@ async def locate_source(db: Session = Depends(get_db)):
     predicted_class = label_encoder.inverse_transform(predictions)
     print(predicted_class[0])
     predicted_class_str = str(predicted_class[0])  # Convert to string to ensure JSON serialization
-
-    
-
     return {"predicted_source": predicted_class_str}
 
-@app.get("/api/detect_duration")
-async def locate_source(db: Session = Depends(get_db)):
-    # Get the most recent file upload
-    file= crud.get_most_recent_file_upload(db)
+@app.post("/api/detect_duration")
+async def detect_duration(db: Session = Depends(get_db)):
+    file = crud.get_most_recent_file_upload(db)
     if not file:
         raise HTTPException(status_code=404, detail="No uploaded files found")
-    
-    print(file.filename)
 
-    # Read the file into a DataFrame
     file_content = BytesIO(file.content)
-    if file.filename.endswith('.csv'):
-        df = pd.read_csv(file_content)
-    else:
-        df = pd.read_excel(file_content)
+    df = pd.read_excel(file_content) if file.filename.endswith('.xlsx') else pd.read_csv(file_content)
+    
+    time = df['Time'].values
+    signal = df['P1'].values
+
+    scales = np.arange(1, 101)
+    avg_power, signal_filtered, signal_detrended = detect_oscillation_start_cwt(signal, scales)
+
+    contamination_values = np.arange(0.05, 0.3, 0.05)
+    anomalies, best_contamination = detect_anomalies_with_optimized_isolation_forest(avg_power, contamination_values)
+
+    anomaly_indices = np.where(anomalies == -1)[0]
+    min_anomaly_duration=2
+    start_time=0
+    end_time=0
+    duration=0
+    if len(anomaly_indices) > 0:
+        durations = np.diff(anomaly_indices)
+        is_significant_duration = np.insert(durations >= min_anomaly_duration, 0, True)
+        significant_anomalies = anomaly_indices[is_significant_duration]
+    #     start_time = time[anomaly_indices[0]]
+    #     end_time = time[anomaly_indices[-1]]
+    # else:
+    #     start_time = end_time = None
+        if significant_anomalies.size > 0:
+            start_time = time[significant_anomalies[0]]
+            end_time = time[significant_anomalies[-1]]
+            duration = end_time - start_time
+        else:
+            start_time=None,
+            end_time=None,
+            duration=None
+            return ("No significant forced oscillation detected")
+    original_img = plot_signal(signal, time, start_time, end_time, SID=1, plot_type='original')
+    detrended_img = plot_signal(signal_detrended, time, start_time, end_time, SID=1, plot_type='detrended')
+    filtered_img = plot_signal(signal_filtered, time, start_time, end_time, SID=1, plot_type='filtered')
+    cwt_img = plot_cwt_power_with_anomalies(avg_power, time, SID=1, anomalies=anomalies)
+
+    return {
+        "start_time": start_time,
+        "end_time": end_time,
+        "duration": duration,
+        "original_signal": original_img,
+        "detrended_signal": detrended_img,
+        "filtered_signal": filtered_img,
+        "cwt_power_with_anomalies": cwt_img
+    }
