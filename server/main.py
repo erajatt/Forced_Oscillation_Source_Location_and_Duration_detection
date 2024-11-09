@@ -162,7 +162,7 @@ async def locate_source(db: Session = Depends(get_db)):
     predicted_class_str = str(predicted_class[0])  # Convert to string to ensure JSON serialization
     return {"predicted_source": predicted_class_str}
 
-@app.post("/api/detect_duration")
+@app.get("/api/detect_duration")
 async def detect_duration(db: Session = Depends(get_db)):
     file = crud.get_most_recent_file_upload(db)
     if not file:

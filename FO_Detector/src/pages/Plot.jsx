@@ -79,6 +79,8 @@ const Plot = () => {
   const [error, setError] = useState(null);
   const [sourceResult, setSourceResult] = useState(null);
   const [showChart, setShowChart] = useState(true);
+  const [showDurationPlots, setShowDurationPlots] = useState(false);
+  const [showSource, setShowSource] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const location = useLocation();
@@ -105,6 +107,8 @@ const Plot = () => {
     }
     setIsAnalyzing(true);
     setError(null);
+    setShowSource(false);
+    setShowDurationPlots(false);
     setShowChart(true);
 
     // Convert selected generators to backend format
@@ -169,10 +173,13 @@ const Plot = () => {
     setError(null);
     setStartTime(null);
     setEndTime(null);
+    setShowSource(false);
+    setShowChart(false);
+    setShowDurationPlots(true);
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/detect_start_time/${fileId}`,
+        `http://127.0.0.1:8000/api/detect_duration`,
         {
           method: "GET",
         }
@@ -201,6 +208,8 @@ const Plot = () => {
     setError(null);
     setSourceResult(null);
     setShowChart(false);
+    setShowDurationPlots(false);
+    setShowSource(true);
 
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/locate_source`, {
@@ -272,7 +281,7 @@ const Plot = () => {
       );
     }
 
-    if (!showChart && sourceResult) {
+    if (showSource && sourceResult) {
       return (
         <div className="flex flex-col items-center justify-center h-full">
           <h3 className="text-2xl font-bold text-indigo-800 mb-4">
@@ -315,6 +324,15 @@ const Plot = () => {
             )}
           </LineChart>
         </ResponsiveContainer>
+      );
+    }
+
+    if (showDurationPlots) {
+      return (
+        <h1>
+          {`Oscillation Start time : ${startTime}`}
+          {`Oscillation End time : ${endTime}`}
+        </h1>
       );
     }
 
@@ -401,6 +419,18 @@ const Plot = () => {
           }`}
         >
           {isLocating ? "Locating..." : "Locate Source"}
+        </button>
+
+        <button
+          onClick={handleDetectStartTime}
+          disabled={isDetecting}
+          className={`w-full bg-indigo-500 text-white font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 ${
+            isDetecting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-indigo-600"
+          }`}
+        >
+          {isDetecting ? "Detecting..." : "Detect Start time"}
         </button>
       </motion.div>
 
