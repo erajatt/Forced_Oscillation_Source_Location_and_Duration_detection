@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import { Clock, AlertCircle } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -83,6 +84,13 @@ const Plot = () => {
   const [showSource, setShowSource] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [duration, setDuration] = useState(null);
+  const [plots, setPlots] = useState({
+    original: null,
+    detrended: null,
+    filtered: null,
+    cwt: null,
+  });
   const location = useLocation();
   const fileId = location.state?.fileId;
 
@@ -173,8 +181,15 @@ const Plot = () => {
     setError(null);
     setStartTime(null);
     setEndTime(null);
-    setShowSource(false);
+    setDuration(null);
+    setPlots({
+      original: null,
+      detrended: null,
+      filtered: null,
+      cwt: null,
+    });
     setShowChart(false);
+    setShowSource(false);
     setShowDurationPlots(true);
 
     try {
@@ -184,15 +199,28 @@ const Plot = () => {
           method: "GET",
         }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to detect start time");
+        throw new Error(errorData.detail || "Failed to detect oscillation");
       }
+
       const result = await response.json();
+
+      // Set timing data
       setStartTime(result.start_time);
       setEndTime(result.end_time);
+      setDuration(result.duration);
+
+      // Set plot images
+      setPlots({
+        original: `data:image/png;base64,${result.original_signal}`,
+        detrended: `data:image/png;base64,${result.detrended_signal}`,
+        filtered: `data:image/png;base64,${result.filtered_signal}`,
+        cwt: `data:image/png;base64,${result.cwt_power_with_anomalies}`,
+      });
     } catch (error) {
-      console.error("Error detecting start time:", error);
+      console.error("Error detecting oscillation:", error);
       setError(error.message);
     } finally {
       setIsDetecting(false);
@@ -329,10 +357,150 @@ const Plot = () => {
 
     if (showDurationPlots) {
       return (
-        <h1>
-          {`Oscillation Start time : ${startTime}`}
-          {`Oscillation End time : ${endTime}`}
-        </h1>
+        <div className="container mx-auto px-4 py-8">
+          {/* Timing Information */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {/* Start Time */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Start Time
+              </h3>
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-blue-500" />
+                <span className="text-xl font-bold">
+                  {isDetecting ? (
+                    <div className="animate-pulse bg-gray-200 h-6 w-24 rounded" />
+                  ) : startTime ? (
+                    `${startTime.toFixed(2)}s`
+                  ) : (
+                    "N/A"
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* End Time */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                End Time
+              </h3>
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-red-500" />
+                <span className="text-xl font-bold">
+                  {isDetecting ? (
+                    <div className="animate-pulse bg-gray-200 h-6 w-24 rounded" />
+                  ) : endTime ? (
+                    `${endTime.toFixed(2)}s`
+                  ) : (
+                    "N/A"
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Duration
+              </h3>
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-green-500" />
+                <span className="text-xl font-bold">
+                  {isDetecting ? (
+                    <div className="animate-pulse bg-gray-200 h-6 w-24 rounded" />
+                  ) : duration ? (
+                    `${duration.toFixed(2)}s`
+                  ) : (
+                    "N/A"
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Plots Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Original Signal */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Original Signal
+              </h3>
+              {isDetecting ? (
+                <div className="w-full h-64 bg-gray-200 animate-pulse rounded-lg" />
+              ) : plots.original ? (
+                <img
+                  src={plots.original}
+                  alt="Original Signal"
+                  className="w-full rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500">
+                  No plot available
+                </div>
+              )}
+            </div>
+
+            {/* Detrended Signal */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Detrended Signal
+              </h3>
+              {isDetecting ? (
+                <div className="w-full h-64 bg-gray-200 animate-pulse rounded-lg" />
+              ) : plots.detrended ? (
+                <img
+                  src={plots.detrended}
+                  alt="Detrended Signal"
+                  className="w-full rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500">
+                  No plot available
+                </div>
+              )}
+            </div>
+
+            {/* Filtered Signal */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Filtered Signal
+              </h3>
+              {isDetecting ? (
+                <div className="w-full h-64 bg-gray-200 animate-pulse rounded-lg" />
+              ) : plots.filtered ? (
+                <img
+                  src={plots.filtered}
+                  alt="Filtered Signal"
+                  className="w-full rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500">
+                  No plot available
+                </div>
+              )}
+            </div>
+
+            {/* CWT Power Plot */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                CWT Power Analysis
+              </h3>
+              {isDetecting ? (
+                <div className="w-full h-64 bg-gray-200 animate-pulse rounded-lg" />
+              ) : plots.cwt ? (
+                <img
+                  src={plots.cwt}
+                  alt="CWT Power Analysis"
+                  className="w-full rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500">
+                  No plot available
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       );
     }
 
