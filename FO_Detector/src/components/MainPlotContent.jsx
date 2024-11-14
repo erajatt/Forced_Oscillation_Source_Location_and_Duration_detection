@@ -59,7 +59,7 @@ const MainPlotContent = () => {
       </h2>
       <div
         className="bg-white rounded-lg shadow-xl p-6"
-        style={{ height: "600px" }}
+        style={{ height: "800px" }}
       >
         {renderContent()}
       </div>
