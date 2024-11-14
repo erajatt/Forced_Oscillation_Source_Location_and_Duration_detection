@@ -10,7 +10,7 @@ const TimingCard = ({ title, value, isLoading, color }) => {
         <span className="text-xl font-bold">
           {isLoading ? (
             <div className="animate-pulse bg-gray-200 h-6 w-24 rounded" />
-          ) : value ? (
+          ) : value >= 0 ? (
             `${value.toFixed(2)}s`
           ) : (
             "N/A"

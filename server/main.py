@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import time
 from io import BytesIO
+import base64
 import pickle
 from database import SessionLocal, engine, Base
 from models import FileUpload
@@ -206,13 +207,23 @@ async def detect_duration(db: Session = Depends(get_db)):
     detrended_img = plot_signal(signal_detrended, time, start_time, end_time, SID=1, plot_type='detrended')
     filtered_img = plot_signal(signal_filtered, time, start_time, end_time, SID=1, plot_type='filtered')
     cwt_img = plot_cwt_power_with_anomalies(avg_power, time, SID=1, anomalies=anomalies)
-
+    def convert_to_base64(bytes_io):
+        bytes_io.seek(0)
+        return base64.b64encode(bytes_io.getvalue()).decode()
     return {
         "start_time": start_time,
         "end_time": end_time,
         "duration": duration,
-        "original_signal": original_img,
-        "detrended_signal": detrended_img,
-        "filtered_signal": filtered_img,
-        "cwt_power_with_anomalies": cwt_img
+         "original_signal": convert_to_base64(original_img),
+        "detrended_signal": convert_to_base64(detrended_img),
+        "filtered_signal": convert_to_base64(filtered_img),
+        "cwt_power_with_anomalies": convert_to_base64(cwt_img)
     }
+    
+@app.delete("/api/files/clear")
+async def delete_all_files(db: Session = Depends(get_db)):
+    try:
+        crud.delete_all_files(db)
+        return {"message": "All files deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

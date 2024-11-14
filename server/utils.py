@@ -5,6 +5,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.metrics import f1_score
 from scipy.signal import detrend, savgol_filter
 from io import BytesIO
+from sklearn.preprocessing import MinMaxScaler
 
 def detect_anomalies_with_optimized_isolation_forest(signal, contamination_values, min_power_threshold=0.02):
     signal_reshaped = signal.reshape(-1, 1)
@@ -30,11 +31,17 @@ def detect_anomalies_with_optimized_isolation_forest(signal, contamination_value
 
 def detect_oscillation_start_cwt(signal, scales, wavelet='morl'):
     signal_detrended = detrend(signal)
-    signal_filtered = savgol_filter(signal_detrended, window_length=10, polyorder=3)
+    signal_filtered = savgol_filter(signal_detrended, window_length=50, polyorder=3)
     coefficients, freqs = pywt.cwt(signal_filtered, scales, wavelet)
+    
+    # Calculate power and rescale it to a common range
     power = np.abs(coefficients) ** 2
     avg_power = np.mean(power, axis=0)
-    return avg_power, signal_filtered, signal_detrended
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    avg_power_scaled = scaler.fit_transform(avg_power.reshape(-1, 1)).flatten()
+    
+    return avg_power_scaled, signal_filtered, signal_detrended
+
 
 # Modified plotting function to save as image
 # def plot_signal(signal, time, start_time, end_time, SID, plot_type):

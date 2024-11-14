@@ -18,7 +18,7 @@ const Navbar = () => {
         </motion.div>
 
         {/* Navigation Links */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -42,7 +42,7 @@ const Navbar = () => {
           >
             Contact
           </Link>
-        </motion.div>
+        </motion.div> */}
       </div>
     </nav>
   );

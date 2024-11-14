@@ -15,3 +15,7 @@ def get_file_upload(db: Session, file_id: int):
 
 def get_most_recent_file_upload(db: Session):
     return db.query(FileUpload).order_by(FileUpload.id.desc()).first()
+
+def delete_all_files(db: Session):
+    db.query(FileUpload).delete()
+    db.commit()
