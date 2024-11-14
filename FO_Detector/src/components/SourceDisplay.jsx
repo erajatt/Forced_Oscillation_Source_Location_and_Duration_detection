@@ -29,11 +29,11 @@ const SourceDisplay = ({ source }) => {
       <h3 className="text-2xl font-bold text-indigo-800 mb-4">
         Source Generator: {source.predicted_source}
       </h3>
-      <div className="relative w-full h-4/5">
+      <div className="flex justify-center">
         <img
           src={GENERATOR_IMAGES[source.predicted_source]}
           alt={`Generator ${source.predicted_source}`}
-          className="object-contain w-full h-full"
+          className="object-contain w-2/3 h-auto"
         />
       </div>
     </div>

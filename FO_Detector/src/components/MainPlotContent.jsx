@@ -33,15 +33,23 @@ const MainPlotContent = () => {
     }
 
     if (showChart) {
-      return <DataChart />;
+      return (
+        <div className="h-[600px]">
+          <DataChart />
+        </div>
+      );
     }
 
     if (showDurationPlots) {
-      return <DurationPlots />;
+      return (
+        <div className="min-h-[600px]">
+          <DurationPlots />
+        </div>
+      );
     }
 
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-[600px] text-gray-500">
         Select options and click Plot to view data
       </div>
     );
@@ -57,10 +65,7 @@ const MainPlotContent = () => {
       <h2 className="text-3xl font-bold text-indigo-800 mb-6 font-serif">
         Data Visualization
       </h2>
-      <div
-        className="bg-white rounded-lg shadow-xl p-6"
-        style={{ height: "800px" }}
-      >
+      <div className="bg-white rounded-lg shadow-xl p-6 overflow-visible">
         {renderContent()}
       </div>
     </motion.div>

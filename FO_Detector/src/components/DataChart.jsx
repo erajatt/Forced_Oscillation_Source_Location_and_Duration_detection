@@ -9,7 +9,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
-} from "recharts"; // Importing components from recharts
+} from "recharts";
 import { propertyLabelMap } from "../utils/constants";
 
 const DataChart = () => {
@@ -31,39 +31,44 @@ const DataChart = () => {
     return colors[index % colors.length];
   };
 
-  const CustomizedDot = (props) => {
-    const { cx, cy } = props;
-    if (props.isActive) {
-      return <circle cx={cx} cy={cy} r={4} fill={props.stroke} />;
-    }
-    return null;
-  };
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        No data available
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="timestamp" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        {selectedGenerators.flatMap((gen, genIndex) =>
-          selectedProperties.map((prop, propIndex) => (
-            <Line
-              key={`${gen}-${prop}`}
-              type="monotone"
-              dataKey={`${gen}_${prop}`}
-              stroke={getColor(
-                genIndex * selectedProperties.length + propIndex
-              )}
-              name={`${gen} ${propertyLabelMap[prop]}`}
-              dot={<CustomizedDot />}
-              activeDot={{ r: 6 }}
-            />
-          ))
-        )}
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="timestamp" tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Legend />
+          {selectedGenerators.flatMap((gen, genIndex) =>
+            selectedProperties.map((prop, propIndex) => (
+              <Line
+                key={`${gen}-${prop}`}
+                type="monotone"
+                dataKey={`${gen}_${prop}`}
+                stroke={getColor(
+                  genIndex * selectedProperties.length + propIndex
+                )}
+                name={`${gen} ${propertyLabelMap[prop] || prop}`}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+            ))
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
