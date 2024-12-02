@@ -39,8 +39,14 @@ class AnalysisOptions(BaseModel):
 with open("xgb_model_weighted.pkl", "rb") as f:
     xgb_model_weighted = pickle.load(f)
 
+with open("xgb_model_weighted_detection.pkl", "rb") as f:
+    xgb_model_weighted_detection = pickle.load(f)
+
 with open("label_encoder.pkl", "rb") as f:
     label_encoder = pickle.load(f)
+
+with open("label_encoder_detection.pkl", "rb") as f:
+    label_encoder_detection = pickle.load(f)
 
 with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
@@ -162,6 +168,56 @@ async def locate_source(db: Session = Depends(get_db)):
     print(predicted_class[0])
     predicted_class_str = str(predicted_class[0])  # Convert to string to ensure JSON serialization
     return {"predicted_source": predicted_class_str}
+
+@app.get("/api/predict_class")
+async def predict_class(db: Session = Depends(get_db)):
+    # Get the most recent file upload
+    file= crud.get_most_recent_file_upload(db)
+    if not file:
+        raise HTTPException(status_code=404, detail="No uploaded files found")
+    
+    print(file.filename)
+
+    # Read the file into a DataFrame
+    file_content = BytesIO(file.content)
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file_content)
+    else:
+        df = pd.read_excel(file_content)
+
+    # Assuming the file has similar features as the training data
+    FEATURE_COLUMNS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5',
+                       'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10',
+                       'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10']
+
+    # Filter the relevant columns
+    if not all(col in df.columns for col in FEATURE_COLUMNS):
+        raise HTTPException(status_code=400, detail="Uploaded file does not contain the required features.")
+
+    test_features = df[FEATURE_COLUMNS]
+    test_features_array=np.array(test_features)
+
+    # Step 1: Reshape and scale the test data
+    num_samples, num_features = test_features.shape  # Should be (3001, 40)
+    test_features_flattened = test_features_array.reshape(1, num_samples * num_features)  # Flatten to (1, 120040)
+    # test_features_scaled = scaler.transform(test_features_flattened)
+
+    # Step 2: Apply RF feature importance weighting
+    rf_feature_importances_repeated = np.tile(rf_feature_importances, num_samples)
+    test_features_weighted = test_features_flattened * rf_feature_importances_repeated
+
+    # Step 3: Use the XGBoost model to make predictions
+    predictions= xgb_model_weighted_detection.predict(test_features_weighted)
+   
+    # Step 4: Decode the predicted label
+    predicted_class = label_encoder_detection.inverse_transform(predictions)
+    print(predicted_class[0])
+    if predicted_class[0] == 0:
+        return{"Predicted class: Natural Oscillation"}
+    elif predicted_class[0] == 1:
+        return{"Predicted class: Forced Oscillation"}
+    else:
+        return{"Unexpected predicted class:", str(predicted_class[0])}
 
 @app.get("/api/detect_duration")
 async def detect_duration(db: Session = Depends(get_db)):
