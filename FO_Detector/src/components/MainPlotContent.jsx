@@ -6,17 +6,27 @@ import ErrorMessage from "./ErrorMessage";
 import SourceDisplay from "./SourceDisplay";
 import DataChart from "./Datachart";
 import DurationPlots from "./DurationPlots";
+import ClassDisplay from "./ClassDisplay";
 
 const MainPlotContent = () => {
   const {
     isAnalyzing,
     isLocating,
+    setIsLocating,
     isDetecting,
     error,
+    setError,
     showSource,
+    setShowSource,
     sourceResult,
+    setSourceResult,
+    predictedClass,
     showChart,
+    setShowChart,
     showDurationPlots,
+    setShowDurationPlots,
+    showClass,
+    setShowClass,
   } = usePlotContext();
 
   const renderContent = () => {
@@ -36,6 +46,23 @@ const MainPlotContent = () => {
       return (
         <div className="h-[600px]">
           <DataChart />
+        </div>
+      );
+    }
+
+    if (showClass) {
+      return (
+        <div className="h-[600px]">
+          <ClassDisplay
+            class={predictedClass}
+            setIsLocating={setIsLocating}
+            setError={setError}
+            setSourceResult={setSourceResult}
+            setShowChart={setShowChart}
+            setShowDurationPlots={setShowDurationPlots}
+            setShowSource={setShowSource}
+            setShowClass={setShowClass}
+          />
         </div>
       );
     }

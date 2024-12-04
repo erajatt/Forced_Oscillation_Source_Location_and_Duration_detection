@@ -132,6 +132,50 @@ export const handleLocateSource = async (fileId, callbacks) => {
   }
 };
 
+export const handlePredictClass = async (fileId, callbacks) => {
+  const {
+    setIsPredicting,
+    setError,
+    setPredictedClass,
+    setShowChart,
+    setShowDurationPlots,
+    setShowSource,
+    setShowClass,
+  } = callbacks;
+
+  if (!fileId) {
+    setError("No file selected. Please upload a file first.");
+    return;
+  }
+
+  setIsPredicting(true);
+  setError(null);
+  // setSourceResult(null);
+  setShowChart(false);
+  setShowDurationPlots(false);
+  setShowSource(false);
+  setShowClass(true);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/predict_class`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to locate source");
+    }
+
+    const result = await response.json();
+    setPredictedClass(result["Predicted class"]);
+  } catch (error) {
+    console.error("Error Predicting source:", error);
+    setError(error.message);
+  } finally {
+    setIsPredicting(false);
+  }
+};
+
 export const handleDetectStartTime = async (fileId, callbacks) => {
   const {
     setIsDetecting,
@@ -143,6 +187,7 @@ export const handleDetectStartTime = async (fileId, callbacks) => {
     setShowChart,
     setShowSource,
     setShowDurationPlots,
+    setShowClass,
   } = callbacks;
 
   if (!fileId) {
@@ -163,6 +208,7 @@ export const handleDetectStartTime = async (fileId, callbacks) => {
   });
   setShowChart(false);
   setShowSource(false);
+  setShowClass(false);
   setShowDurationPlots(true);
 
   try {

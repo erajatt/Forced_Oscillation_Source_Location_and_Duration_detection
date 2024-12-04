@@ -5,7 +5,8 @@ import { usePlotContext } from "../context/PlotContext";
 import {
   handleConfirm,
   handleDetectStartTime,
-  handleLocateSource,
+  // handleLocateSource,
+  handlePredictClass,
 } from "../api";
 
 const ActionButtons = () => {
@@ -15,16 +16,20 @@ const ActionButtons = () => {
   const {
     isAnalyzing,
     setIsAnalyzing,
+    isPredicting,
+    setIsPredicting,
     isLocating,
     setIsLocating,
     isDetecting,
     setIsDetecting,
     setError,
+    setShowClass,
     setShowSource,
     setShowDurationPlots,
     setShowChart,
     setData,
     setSourceResult,
+    setPredictedClass,
     setStartTime,
     setEndTime,
     setDuration,
@@ -40,18 +45,21 @@ const ActionButtons = () => {
       setShowSource,
       setShowDurationPlots,
       setShowChart,
+      setShowClass,
       setData,
     });
   };
 
-  const handleLocateClick = async () => {
-    await handleLocateSource(fileId, {
-      setIsLocating,
+  const handlePredictClick = async () => {
+    await handlePredictClass(fileId, {
+      setIsPredicting,
       setError,
-      setSourceResult,
+      // setSourceResult,
+      setPredictedClass,
       setShowChart,
       setShowDurationPlots,
       setShowSource,
+      setShowClass,
     });
   };
 
@@ -65,6 +73,7 @@ const ActionButtons = () => {
       setPlots,
       setShowChart,
       setShowSource,
+      setShowClass,
       setShowDurationPlots,
     });
   };
@@ -88,20 +97,6 @@ const ActionButtons = () => {
       </button>
 
       <button
-        onClick={handleLocateClick}
-        disabled={isLocating}
-        className={`
-          w-full bg-indigo-500 text-white font-semibold py-2 px-4 rounded-md 
-          transition duration-300 ease-in-out transform hover:scale-105
-          ${
-            isLocating ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-600"
-          }
-        `}
-      >
-        {isLocating ? "Locating..." : "Locate Source"}
-      </button>
-
-      <button
         onClick={handleDetectClick}
         disabled={isDetecting}
         className={`
@@ -115,6 +110,22 @@ const ActionButtons = () => {
         `}
       >
         {isDetecting ? "Detecting..." : "Detect Start time"}
+      </button>
+
+      <button
+        onClick={handlePredictClick}
+        disabled={isPredicting}
+        className={`
+          w-full bg-indigo-500 text-white font-semibold py-2 px-4 rounded-md 
+          transition duration-300 ease-in-out transform hover:scale-105
+          ${
+            isPredicting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-indigo-600"
+          }
+        `}
+      >
+        {isPredicting ? "Predicting..." : "Predict Oscillation type"}
       </button>
     </div>
   );

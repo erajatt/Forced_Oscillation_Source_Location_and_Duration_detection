@@ -7,12 +7,15 @@ export const PlotProvider = ({ children }) => {
   const [selectedGenerators, setSelectedGenerators] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPredicting, setIsPredicting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [error, setError] = useState(null);
   const [sourceResult, setSourceResult] = useState(null);
+  const [predictedClass, setPredictedClass] = useState(null);
   const [showChart, setShowChart] = useState(true);
   const [showDurationPlots, setShowDurationPlots] = useState(false);
+  const [showClass, setShowClass] = useState(false);
   const [showSource, setShowSource] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -35,6 +38,8 @@ export const PlotProvider = ({ children }) => {
         setSelectedProperties,
         isAnalyzing,
         setIsAnalyzing,
+        isPredicting,
+        setIsPredicting,
         isLocating,
         setIsLocating,
         isDetecting,
@@ -43,10 +48,14 @@ export const PlotProvider = ({ children }) => {
         setError,
         sourceResult,
         setSourceResult,
+        predictedClass,
+        setPredictedClass,
         showChart,
         setShowChart,
         showDurationPlots,
         setShowDurationPlots,
+        showClass,
+        setShowClass,
         showSource,
         setShowSource,
         startTime,

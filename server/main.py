@@ -53,6 +53,9 @@ with open("scaler.pkl", "rb") as f:
 
 with open("rf_feature_importances.pkl", "rb") as f:
     rf_feature_importances = pickle.load(f)
+
+with open("rf_feature_importances_detection.pkl", "rb") as f:
+    rf_feature_importances_detection = pickle.load(f)
  
 def get_db():
     db = SessionLocal()
@@ -172,7 +175,7 @@ async def locate_source(db: Session = Depends(get_db)):
 @app.get("/api/predict_class")
 async def predict_class(db: Session = Depends(get_db)):
     # Get the most recent file upload
-    file= crud.get_most_recent_file_upload(db)
+    file = crud.get_most_recent_file_upload(db)
     if not file:
         raise HTTPException(status_code=404, detail="No uploaded files found")
     
@@ -195,7 +198,7 @@ async def predict_class(db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Uploaded file does not contain the required features.")
 
     test_features = df[FEATURE_COLUMNS]
-    test_features_array=np.array(test_features)
+    test_features_array = np.array(test_features)
 
     # Step 1: Reshape and scale the test data
     num_samples, num_features = test_features.shape  # Should be (3001, 40)
@@ -203,21 +206,26 @@ async def predict_class(db: Session = Depends(get_db)):
     # test_features_scaled = scaler.transform(test_features_flattened)
 
     # Step 2: Apply RF feature importance weighting
-    rf_feature_importances_repeated = np.tile(rf_feature_importances, num_samples)
+    rf_feature_importances_repeated = np.tile(rf_feature_importances_detection, num_samples)
     test_features_weighted = test_features_flattened * rf_feature_importances_repeated
 
     # Step 3: Use the XGBoost model to make predictions
-    predictions= xgb_model_weighted_detection.predict(test_features_weighted)
-   
+    predictions = xgb_model_weighted_detection.predict(test_features_weighted)
+    predictions = np.array(predictions).reshape(-1)  # Ensure it's a 1D array
+
     # Step 4: Decode the predicted label
-    predicted_class = label_encoder_detection.inverse_transform(predictions)
-    print(predicted_class[0])
-    if predicted_class[0] == 0:
-        return{"Predicted class: Natural Oscillation"}
-    elif predicted_class[0] == 1:
-        return{"Predicted class: Forced Oscillation"}
-    else:
-        return{"Unexpected predicted class:", str(predicted_class[0])}
+    try:
+        predicted_class = label_encoder_detection.inverse_transform(predictions)
+        if len(predicted_class) == 0:
+            raise HTTPException(status_code=500, detail="Prediction resulted in an empty class.")
+        predicted_class_str = str(predicted_class[0])  # Convert to string for JSON response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error decoding predicted class: {str(e)}")
+
+    print(predicted_class_str)
+    return {"Predicted class": predicted_class_str}
+
+    
 
 @app.get("/api/detect_duration")
 async def detect_duration(db: Session = Depends(get_db)):
