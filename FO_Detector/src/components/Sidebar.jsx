@@ -33,7 +33,7 @@ const Sidebar = () => {
       initial={{ x: -250 }}
       animate={{ x: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-64 bg-white shadow-lg p-6 space-y-6 overflow-y-auto"
+      className="w-64 bg-white p-6 space-y-6 overflow-y-auto mb-4"
     >
       <div>
         <h3 className="text-lg font-semibold text-indigo-800 mb-2">

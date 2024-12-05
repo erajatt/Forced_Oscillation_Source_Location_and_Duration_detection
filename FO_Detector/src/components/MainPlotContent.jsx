@@ -12,6 +12,8 @@ const MainPlotContent = () => {
   const {
     isAnalyzing,
     isLocating,
+    isPredicting,
+    setIsPredicting,
     setIsLocating,
     isDetecting,
     error,
@@ -30,7 +32,7 @@ const MainPlotContent = () => {
   } = usePlotContext();
 
   const renderContent = () => {
-    if (isAnalyzing || isLocating || isDetecting) {
+    if (isAnalyzing || isLocating || isDetecting || isPredicting) {
       return <LoadingSpinner />;
     }
 
