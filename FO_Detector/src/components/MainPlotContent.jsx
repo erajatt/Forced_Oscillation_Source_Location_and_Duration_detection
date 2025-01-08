@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import LoadingSpinner from "./LoadingSpinner";
 import ErrorMessage from "./ErrorMessage";
 import SourceDisplay from "./SourceDisplay";
-import DataChart from "./Datachart";
+import DataChart from "./DataChart";
 import DurationPlots from "./DurationPlots";
 import ClassDisplay from "./ClassDisplay";
 
