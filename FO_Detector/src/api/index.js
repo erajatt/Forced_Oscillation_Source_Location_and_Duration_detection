@@ -56,7 +56,7 @@ export const handleConfirm = async (
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/analyze/${fileId}`,
+      `https://forced-oscillation-source-location-and.onrender.com/api/analyze/${fileId}`,
       {
         method: "POST",
         headers: {
@@ -108,7 +108,7 @@ export const handleLocateSource = async (fileId, callbacks) => {
   setShowSource(true);
 
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/locate_source`, {
+    const response = await fetch(`https://forced-oscillation-source-location-and.onrender.com/api/locate_source`, {
       method: "GET",
     });
 
@@ -157,7 +157,7 @@ export const handlePredictClass = async (fileId, callbacks) => {
   setShowClass(true);
 
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/predict_class`, {
+    const response = await fetch(`https://forced-oscillation-source-location-and.onrender.com/api/predict_class`, {
       method: "GET",
     });
 
@@ -212,7 +212,7 @@ export const handleDetectStartTime = async (fileId, callbacks) => {
   setShowDurationPlots(true);
 
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/detect_duration`, {
+    const response = await fetch(`https://forced-oscillation-source-location-and.onrender.com/api/detect_duration`, {
       method: "GET",
     });
 
