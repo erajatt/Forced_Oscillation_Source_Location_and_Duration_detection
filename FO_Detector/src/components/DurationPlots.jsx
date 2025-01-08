@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { usePlotContext } from "../context/PlotContext";
 import PlotCard from "./PlotCard";
-import TimingCard from "./TimingCard";
+import TimingCard from "./TImingCard";
 
 const plotTypes = [
   { id: "original", title: "Original Signal" },
