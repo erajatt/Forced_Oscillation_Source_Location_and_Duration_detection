@@ -22,7 +22,7 @@ const Home = () => {
     }
   };
 
-  const handleStartAnalysis = async () => {
+  const handleStartAnalysis = async (isRealTime = false) => {
     if (!file) {
       alert("Please select a file first");
       return;
@@ -33,7 +33,7 @@ const Home = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("https://forced-oscillation-source-location-and.onrender.com/api/upload", {
+      const response = await fetch("http://127.0.0.1:8000/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -44,7 +44,7 @@ const Home = () => {
       }
 
       const result = await response.json();
-      navigate("/plot", { state: { fileId: result.file_id } });
+      navigate(isRealTime ? "/realtime" : "/plot", { state: { fileId: result.file_id } });
     } catch (error) {
       console.error("Error uploading file:", error);
       alert(error.message || "Failed to upload file. Please try again.");
@@ -125,43 +125,80 @@ const Home = () => {
                   transition={{ duration: 0.3 }}
                   className="mt-6"
                 >
-                  <button
-                    onClick={handleStartAnalysis}
-                    disabled={isUploading}
-                    className={`w-full bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm ${
-                      isUploading
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-emerald-700"
-                    }`}
-                  >
-                    {isUploading ? (
-                      <span className="flex items-center justify-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Processing...
-                      </span>
-                    ) : (
-                      "Plot and visualize data"
-                    )}
-                  </button>
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => handleStartAnalysis(false)}
+                      disabled={isUploading}
+                      className={`w-full bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm ${
+                        isUploading
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-emerald-700"
+                      }`}
+                    >
+                      {isUploading ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        "Plot and visualize data"
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleStartAnalysis(true)}
+                      disabled={isUploading}
+                      className={`w-full bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm ${
+                        isUploading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+                      }`}
+                    >
+                      {isUploading ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        "Detect Real-Time Data"
+                      )}
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </motion.div>
